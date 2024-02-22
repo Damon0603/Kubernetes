@@ -1,0 +1,77 @@
+{
+  "kind": "DeploymentConfig",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "${cs_application}-${cs_lane}",
+    "labels": {
+      "name": "${cs_application}-${cs_lane}"
+    }
+  },
+  "spec": {
+    "replicas": 1,
+    "selector": {
+      "name": "${cs_application}-${cs_lane}"
+    },
+    "strategy": {
+      "type": "Rolling",
+      "rollingParams": {
+        "updatePeriodSeconds": 1,
+        "intervalSeconds": 1,
+        "timeoutSeconds": 600,
+        "maxUnavailable": "25%",
+        "maxSurge": "25%"
+      },
+      "resources": {}
+    },
+    "triggers": [
+      {
+        "type": "ConfigChange"
+      },
+      {
+        "type": "ImageChange",
+        "imageChangeParams": {
+          "automatic": true,
+          "containerNames": ["${cs_application}-${cs_lane}"],
+          "from": {
+            "kind": "ImageStreamTag",
+            "namespace": "${cs_project}",
+            "name": "${cs_application}:${cs_lane}-lane"
+          }
+        }
+      }
+    ],
+    "template": {
+      "metadata": {
+        "labels": {
+          "name": "${cs_application}-${cs_lane}"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "${cs_application}-${cs_lane}",
+            "image": "${cs_project}/${cs_application}",
+            "env": [
+              {
+                "name": "JAVA_MAIN_CLASS",
+                "value": ""
+              },
+              { "name": "JAVA_MAIN_ARGS", "value":"" }
+            ],
+            "imagePullPolicy": "IfNotPresent",
+            "resources": {
+              "limits": {
+                "cpu": "500m",
+                "memory": "64M"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "32M"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
